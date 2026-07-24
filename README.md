@@ -98,6 +98,23 @@ Register the server (printed by the installer):
 claude mcp add mbt python "/abs/path/to/MBT/mcp_server.py"
 ```
 
+**Using Claude Desktop instead of Claude Code?** Open
+**Settings → Developer → Edit Config** (this opens `claude_desktop_config.json`)
+and add:
+
+```json
+{
+  "mcpServers": {
+    "mbt": {
+      "command": "python",
+      "args": ["/abs/path/to/MBT/mcp_server.py"]
+    }
+  }
+}
+```
+
+Restart Claude Desktop to load it.
+
 ---
 
 ## Running on Linux / macOS (via Wine)
