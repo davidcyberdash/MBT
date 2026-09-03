@@ -186,6 +186,21 @@ def build_tester_ini(expert, symbol, period="H1", from_date=None, to_date=None,
     return "\n".join(lines) + "\n"
 
 
+def _run_name(stem: str, stamp: str) -> str:
+    """Build the run name used for the .ini / .set / Report= basename.
+
+    Whitespace is collapsed to underscores on purpose: the run name becomes the
+    /config: argument, and MT5's own command-line parser splits that on spaces,
+    so an EA called e.g. "Moving Average" would make the terminal report
+    "cannot load config ... at start" and then sit there as a normal interactive
+    session until the runner's timeout. Other characters MT5 dislikes in a path
+    go the same way.
+    """
+    stem = re.sub(r"[\s]+", "_", stem.strip())
+    stem = re.sub(r'[<>:"/\\|?*]+', "_", stem)
+    return "%s_%s" % (stem or "run", stamp)
+
+
 def _to_wine_path(launcher: str, path: str) -> str:
     """When the Windows terminal is launched through a Wine launcher, MT5 needs a
     Windows-style path for /config: — a unix path like /home/.. is read against
@@ -354,7 +369,7 @@ def run_strategy_tester(expert, symbol, timeframe="h1", from_date=None, to_date=
 
     expert_name = expert if expert.lower().endswith(".ex5") else expert + ".ex5"
     stamp   = datetime.now().strftime("%Y%m%d_%H%M%S")
-    rname   = f"{os.path.splitext(os.path.basename(expert))[0]}_{stamp}"
+    rname   = _run_name(os.path.splitext(os.path.basename(expert))[0], stamp)
 
     # Report= must be a path the TERMINAL can write. A bare name is the portable
     # choice — MT5 writes <name>.htm into its data dir; we then copy it into
