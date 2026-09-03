@@ -1,4 +1,9 @@
-MetaTrader5>=5.0.45
+# MetaTrader5 ships Windows-only wheels and no source dist, so pip cannot even
+# resolve it off Windows. The marker keeps `pip install -r` working on macOS and
+# Linux, where the data tools instead run on a Python inside the Wine prefix
+# (that Python IS Windows, so the marker matches there and it installs).
+MetaTrader5>=5.0.45; sys_platform == "win32"
 numpy>=1.24.0
 PyYAML>=6.0
-mcp>=1.0.0
+# mcp 2.x renamed FastMCP; mcp_server.py is written against the 1.x API.
+mcp>=1.0.0,<2

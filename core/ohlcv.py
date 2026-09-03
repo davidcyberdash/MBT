@@ -4,19 +4,23 @@ points at is the source of truth.
 """
 
 from datetime import datetime, timedelta
-import MetaTrader5 as mt5
 
-from .connection import connect
+from .connection import connect, mt5
 
+# Timeframe names map to MT5's ENUM_TIMEFRAMES constants. The constants only
+# exist when the (Windows-only) MetaTrader5 package imported; without it the
+# keys stay valid so validation and error messages still read correctly, and
+# every function here calls connect() first, which raises the clear
+# "MetaTrader5 not importable" error before any value is used.
+_TF_ATTRS = {
+    "1m": "TIMEFRAME_M1",   "5m": "TIMEFRAME_M5",
+    "15m": "TIMEFRAME_M15", "30m": "TIMEFRAME_M30",
+    "1h": "TIMEFRAME_H1",   "4h": "TIMEFRAME_H4",
+    "1d": "TIMEFRAME_D1",   "1w": "TIMEFRAME_W1",
+}
 TIMEFRAME_MAP = {
-    "1m":  mt5.TIMEFRAME_M1,
-    "5m":  mt5.TIMEFRAME_M5,
-    "15m": mt5.TIMEFRAME_M15,
-    "30m": mt5.TIMEFRAME_M30,
-    "1h":  mt5.TIMEFRAME_H1,
-    "4h":  mt5.TIMEFRAME_H4,
-    "1d":  mt5.TIMEFRAME_D1,
-    "1w":  mt5.TIMEFRAME_W1,
+    tf: (getattr(mt5, attr) if mt5 is not None else None)
+    for tf, attr in _TF_ATTRS.items()
 }
 
 # Approx seconds per bar — used to bound the forward fetch window.
