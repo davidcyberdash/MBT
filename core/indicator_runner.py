@@ -23,6 +23,7 @@ import subprocess
 
 from .connection import reports_dir
 from .tester import (_tester_cfg, _data_dir, _common_files_dir, _launch_cmd,
+                     _run_name,
                      build_tester_ini, _fmt_date)
 
 HOST_EA = "MBT_IndicatorHost"
@@ -116,7 +117,7 @@ def run_indicator(indicator, symbol, timeframe="h1", from_date=None, to_date=Non
                         "source in MQL5/Experts." % (host_ea, host_ex5, host_ea)}
 
     stamp = time.strftime("%Y%m%d_%H%M%S")
-    run_name = "%s_%s" % (os.path.splitext(os.path.basename(indicator))[0], stamp)
+    run_name = _run_name(os.path.splitext(os.path.basename(indicator))[0], stamp)
 
     # .set tells the host EA which indicator to load.
     set_file = _write_set_file(run_name, indicator)

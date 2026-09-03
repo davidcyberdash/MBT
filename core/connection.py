@@ -7,9 +7,33 @@ config.yaml, never the code.
 
 import os
 import yaml
-import MetaTrader5 as mt5
+
+# The MetaTrader5 package is Windows-only, and off-Windows it must run under the
+# same Wine prefix's Python as the terminal. Import it optionally so the tools
+# that DON'T need it (compile_ea, run_indicator, run_strategy_tester — they
+# launch the terminal/MetaEditor as a subprocess) still work under a plain
+# system Python, as the README describes. The data tools raise via require_mt5().
+try:
+    import MetaTrader5 as mt5
+except ImportError:                      # pragma: no cover - platform dependent
+    mt5 = None
+
+MT5_UNAVAILABLE = (
+    "The MetaTrader5 Python package is not importable, so live-data tools "
+    "(get_ohlcv, get_signals with a relative path, backtest) are unavailable. "
+    "It is Windows-only; off-Windows run this server under the Wine prefix's "
+    "Python. The tester tools (compile_ea, run_indicator, run_strategy_tester) "
+    "do not need it and work as-is."
+)
 
 _CONFIG_CACHE = None
+
+
+def require_mt5():
+    """Return the MetaTrader5 module, or raise a clear error if it is missing."""
+    if mt5 is None:
+        raise RuntimeError(MT5_UNAVAILABLE)
+    return mt5
 
 
 def _toolkit_root() -> str:
@@ -42,6 +66,7 @@ def connect() -> bool:
     Initialize the MT5 connection using the path in config.yaml.
     Idempotent — safe to call before every operation.
     """
+    require_mt5()
     cfg  = load_config()
     path = (cfg.get("mt5_path") or "").strip()
 
